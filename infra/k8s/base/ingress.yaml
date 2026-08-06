@@ -1,18 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dev-repo-template
+  name: tauri-app-template
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: dev-repo-template.example.com
+    - host: tauri-app-template.example.com
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: dev-repo-template
+                name: tauri-app-template
                 port:
                   number: 80

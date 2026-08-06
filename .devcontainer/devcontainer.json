@@ -1,5 +1,5 @@
 {
-    "name": "Dev-Repo-Template Dev Environment",
+    "name": "Tauri-App-Template Dev Environment",
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."

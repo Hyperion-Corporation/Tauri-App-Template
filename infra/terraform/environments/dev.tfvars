@@ -1,3 +1,3 @@
 environment  = "dev"
-project_name = "dev-repo-template"
+project_name = "tauri-app-template"
 region       = "us-east-1"

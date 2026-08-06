@@ -9,5 +9,5 @@ if(NOT benchmark_FOUND)
     FetchContent_MakeAvailable(googlebenchmark)
 endif()
 
-add_executable(dev_repo_template_benchmark greet_benchmark.cpp)
-target_link_libraries(dev_repo_template_benchmark PRIVATE dev_repo_template_cpp benchmark::benchmark_main)
+add_executable(tauri_app_template_benchmark greet_benchmark.cpp)
+target_link_libraries(tauri_app_template_benchmark PRIVATE tauri_app_template_cpp benchmark::benchmark_main)

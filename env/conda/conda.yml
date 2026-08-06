@@ -1,4 +1,4 @@
-name: dev-repo-template
+name: tauri-app-template
 channels:
   - conda-forge
   - defaults
