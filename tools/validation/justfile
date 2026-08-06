@@ -1,30 +1,23 @@
-# tools/validation — run every language module's linters/formatters.
+# tools/validation — run application module linters/formatters.
 
 set shell := ["bash", "-c"]
 
 # Run all linters
-all: python typescript javascript kotlin java rust go cpp
+[no-cd]
+all: backend middleware frontend
 
-python:
-    cd python && uv run ruff check . && uv run ruff format --check .
+[no-cd]
+backend:
+    @if command -v clang-format >/dev/null 2>&1; then \
+        find backend/src backend/include backend/test -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format --dry-run --Werror; \
+    else \
+        echo "clang-format not installed, skipping C++ backend linting."; \
+    fi
 
-typescript:
-    cd typescript && npm run lint
+[no-cd]
+middleware:
+    cd middleware && uv run ruff check . && uv run ruff format --check .
 
-javascript:
-    cd website/javascript && npm run lint
-
-kotlin:
-    cd kotlin && ./gradlew ktlintCheck
-
-java:
-    cd java && mvn -q -B compile
-
-rust:
-    cd rust && cargo fmt -- --check && cargo clippy --all-targets -- -D warnings
-
-go:
-    cd go && gofmt -l . && go vet ./...
-
-cpp:
-    find cpp/src cpp/include cpp/test -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+[no-cd]
+frontend:
+    cd frontend && npm run lint

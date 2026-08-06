@@ -1,27 +1,22 @@
 # Architecture
 
-> **TODO:** Replace with the real system architecture once product code exists. This page should stay in sync with `docs/structurizr/workspace.dsl`.
+`Tauri-App-Template` provides a modular architecture for desktop applications combining native performance, machine learning capabilities, and a responsive web UI.
 
 ## Overview
 
-> One paragraph: what the system does and the shape of its major components.
+The application is structured into three primary decoupled tiers:
+- **Frontend (`frontend/`)**: User Interface built with React, Vite, TypeScript, and wrapped by Tauri (`src-tauri`) for desktop functionality.
+- **Middleware (`middleware/`)**: Python service hosting Deep Learning models (PyTorch/TensorFlow) and acting as a bridge between C++ compute algorithms and the frontend.
+- **Backend (`backend/`)**: High-performance C++ core engine for raw compute, memory management, and native performance logic.
 
 ## Module Boundaries
 
-| Module | Language | Responsibility |
+| Module | Language / Framework | Primary Responsibility |
 | --- | --- | --- |
-| `python/` | Python | TODO |
-| `typescript/` | TypeScript | TODO |
-| `kotlin/` | Kotlin | TODO |
-| `java/` | Java | TODO |
-| `rust/` | Rust | TODO |
-| `go/` | Go | TODO |
-| `cpp/` | C++ | TODO |
-
-## C4 Diagrams
-
-See [`docs/structurizr/`](structurizr/README.md) for the rendered C4 model (Context → Container → Component).
+| `frontend/` | TypeScript, React, Vite, Rust (Tauri) | UI rendering, user interaction, Tauri desktop lifecycle, and IPC |
+| `middleware/` | Python (>=3.11), PyTorch, TensorFlow | Machine learning inference, model loading, and C++ module integration |
+| `backend/` | C++ (>=20), CMake | Native core engine, high-performance algorithms, and data crunching |
 
 ## Architecture Decision Records
 
-Significant, hard-to-reverse decisions are recorded under [`docs/adr/`](adr/) using the [Michael Nygard ADR format](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
+Significant decisions are recorded under [`docs/adr/`](adr/) using the [Michael Nygard ADR format](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

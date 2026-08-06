@@ -1,17 +1,14 @@
-# tools/bench — run benchmarks across language modules.
+# tools/bench — run benchmarks across application modules.
 
 set shell := ["bash", "-c"]
 
-all: python rust cpp go
+[no-cd]
+all: backend middleware
 
-python:
-    cd python && uv run pytest benchmark --benchmark-only
+[no-cd]
+backend:
+    cmake -S backend -B backend/build -DCMAKE_BUILD_TYPE=Release && cmake --build backend/build --target benchmark -j && ./backend/build/benchmark/benchmark
 
-rust:
-    cd rust && cargo bench
-
-cpp:
-    cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release && cmake --build cpp/build --target benchmark -j && ./cpp/build/benchmark/benchmark
-
-go:
-    cd go && go test -bench=. ./...
+[no-cd]
+middleware:
+    cd middleware && uv run pytest benchmark --benchmark-only

@@ -1,4 +1,4 @@
-"""Sphinx configuration for the Python module's API reference.
+"""Sphinx configuration for the Python middleware module's API reference.
 
 Run: sphinx-build -b html docs/sphinx site/sphinx-api
 """
@@ -12,10 +12,10 @@ REPO_ROOT = Path(__file__).parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 # ── Project metadata ─────────────────────────────────────────────────────────
-project = "Dev-Repo-Template — Python Reference"
+project = "Tauri-App-Template — Python Middleware Reference"
 author = "ACFHarbinger"
 release = "0.1.0"
-html_title = "Python API Reference"
+html_title = "Python Middleware API Reference"
 copyright = "2026, ACFHarbinger"
 
 # ── Extensions ───────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ extensions = [
 ]
 
 # ── sphinx-autoapi ────────────────────────────────────────────────────────────
-autoapi_dirs = [str(REPO_ROOT / "python" / "src")]
+autoapi_dirs = [str(REPO_ROOT / "middleware" / "src")]
 autoapi_type = "python"
 autoapi_options = [
     "members",

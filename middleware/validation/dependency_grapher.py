@@ -14,7 +14,6 @@ Example:
 import ast
 import os
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple
 
 import jinja2
 
@@ -26,8 +25,6 @@ except ImportError:
     print("Error: Required libraries not found.")
     print("Please run: pip install pyvis networkx")
     exit(1)
-
-
 
 
 class DependencyGrapher:
@@ -55,25 +52,25 @@ class DependencyGrapher:
             project_root (str): The root directory of the project.
         """
         self.project_root = os.path.abspath(project_root)
-        self.all_files: Set[str] = set()
+        self.all_files: set[str] = set()
 
         # Graph tracing mapping
-        self.definitions: Dict[str, Set[str]] = defaultdict(set)
-        self.imports: Dict[str, Dict[str, Tuple[str, str]]] = defaultdict(dict)
+        self.definitions: dict[str, set[str]] = defaultdict(set)
+        self.imports: dict[str, dict[str, tuple[str, str]]] = defaultdict(dict)
 
         # UI mapping
-        self.ui_definitions: Dict[str, Dict] = {}
-        self.ui_imports_direct: Dict[str, List[str]] = defaultdict(list)
-        self.ui_imports_grouped: Dict[str, Dict[str, List[str]]] = defaultdict(dict)
+        self.ui_definitions: dict[str, dict] = {}
+        self.ui_imports_direct: dict[str, list[str]] = defaultdict(list)
+        self.ui_imports_grouped: dict[str, dict[str, list[str]]] = defaultdict(dict)
 
-        self.nodes: Set[Tuple[str, str]] = set()
-        self.edges: List[Tuple[str, str, str]] = []
+        self.nodes: set[tuple[str, str]] = set()
+        self.edges: list[tuple[str, str, str]] = []
 
         # Load templates from the script's directory
         script_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "html")
         self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(script_dir))
 
-    def _python_path_to_filepath(self, module_path: str) -> Optional[str]:
+    def _python_path_to_filepath(self, module_path: str) -> str | None:
         """
         Convert a Python path to a file path.
 
@@ -96,7 +93,10 @@ class DependencyGrapher:
         Scan the project directory and extract all definitions and imports.
         """
         for root, _, files in os.walk(self.project_root):
-            if any(part.startswith(".") or part in ("venv", "__pycache__", "env") for part in root.split(os.sep)):
+            if any(
+                part.startswith(".") or part in ("venv", "__pycache__", "env")
+                for part in root.split(os.sep)
+            ):
                 continue
             for file in files:
                 if file.endswith(".py"):
@@ -114,7 +114,7 @@ class DependencyGrapher:
             filepath (str): Path to the file.
         """
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
+            with open(filepath, encoding="utf-8") as f:
                 source = f.read()
             tree = ast.parse(source, filename=filepath)
         except (SyntaxError, UnicodeDecodeError):
@@ -130,8 +130,8 @@ class DependencyGrapher:
         self.ui_imports_grouped[filepath] = dict(visitor.imports_grouped)
 
     def trace_backward(
-        self, current_file: str, target_name: str, visited: Optional[Set[Tuple[str, str]]] = None
-    ) -> Optional[str]:
+        self, current_file: str, target_name: str, visited: set[tuple[str, str]] | None = None
+    ) -> str | None:
         """
         Trace backward from the target node to find all origins.
 
@@ -260,8 +260,16 @@ class DependencyGrapher:
         """
         template = self.jinja_env.get_template("edge_template.html")
 
-        src_label = os.path.relpath(source, self.project_root) if not source.startswith("External:") else source
-        tgt_label = os.path.relpath(target, self.project_root) if not target.startswith("External:") else target
+        src_label = (
+            os.path.relpath(source, self.project_root)
+            if not source.startswith("External:")
+            else source
+        )
+        tgt_label = (
+            os.path.relpath(target, self.project_root)
+            if not target.startswith("External:")
+            else target
+        )
 
         return template.render(direction=direction, src_label=src_label, tgt_label=tgt_label)
 
@@ -295,7 +303,9 @@ class DependencyGrapher:
         Args:
             target_node_id (str): The ID of the target node.
         """
-        net = Network(height="100vh", width="100%", bgcolor="#222222", font_color="white", directed=True)
+        net = Network(
+            height="100vh", width="100%", bgcolor="#222222", font_color="white", directed=True
+        )
         net.force_atlas_2based(gravity=-50)
 
         for filepath, n_type in self.nodes:
@@ -315,13 +325,27 @@ class DependencyGrapher:
                 if n_type == "usage"
                 else "#9e9e9e"
             )
-            net.add_node(filepath, label=label, color=color, size=25, title="👆 Click for UML details", uml=uml_content)
+            net.add_node(
+                filepath,
+                label=label,
+                color=color,
+                size=25,
+                title="👆 Click for UML details",
+                uml=uml_content,
+            )
 
         unique_edges = set(self.edges)
         for source, target, direction in unique_edges:
             uml_content = self._build_edge_uml(source, target, direction)
             color = "#e67e22" if direction == "backward" else "#9b59b6"
-            net.add_edge(source, target, color=color, arrows="to", title="👆 Click for UML details", uml=uml_content)
+            net.add_edge(
+                source,
+                target,
+                color=color,
+                arrows="to",
+                title="👆 Click for UML details",
+                uml=uml_content,
+            )
 
         output_file = "dependency_graph.html"
         net.show(output_file, notebook=False)
@@ -336,7 +360,7 @@ class DependencyGrapher:
             filepath (str): Path to the generated HTML file.
         """
         # 1. Read the generated HTML from Pyvis
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             html_content = f.read()
 
         # 2. Safely resolve the path to our new template file
@@ -345,7 +369,7 @@ class DependencyGrapher:
 
         # 3. Read the template and inject it
         try:
-            with open(template_path, "r", encoding="utf-8") as template_file:
+            with open(template_path, encoding="utf-8") as template_file:
                 injection = template_file.read()
 
             # Replace the closing body tag with our injection + the closing body tag
@@ -359,7 +383,3 @@ class DependencyGrapher:
             print(f"\nWarning: Could not find '{template_path}'.")
             print("The graph was generated, but the UML panel won't be interactive.")
             print("Please ensure 'uml_panel.html' is in the same directory as this script.")
-
-
-
-

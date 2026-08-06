@@ -9,8 +9,8 @@ reset := '\033[0m'
 # Print the project banner
 [private]
 _print_header:
-    @printf '{{bold}}{{cyan}}Dev-Repo-Template{{reset}}\n'
-    @printf 'Polyglot GitHub template repository (Python · TypeScript · Kotlin · Rust · Go · C++)\n\n'
+    @printf '{{bold}}{{cyan}}Tauri-App-Template{{reset}}\n'
+    @printf 'Tauri Desktop App Template (C++ Backend · Python Middleware · TypeScript/Tauri Frontend)\n\n'
 
 # List every recipe across all sub-modules
 help: _print_header

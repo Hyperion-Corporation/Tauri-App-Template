@@ -40,7 +40,6 @@ import ast
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
 
 SKIP_DIRS = {".git", "__pycache__", "venv", ".venv", "node_modules", "dist", "build"}
 
@@ -55,11 +54,13 @@ RESET = "\033[0m"
 try:
     from pyvis.network import Network
 except ImportError:
-    print(f"{YELLOW}pyvis not installed — skipping HTML in generate_html. Install with: uv add pyvis{RESET}")
+    print(
+        f"{YELLOW}pyvis not installed — skipping HTML in generate_html. Install with: uv add pyvis{RESET}"
+    )
     Network = None
 
 # (module prefix, display label, hex color)
-DEFAULT_LAYERS: List[Tuple[str, str, str]] = [
+DEFAULT_LAYERS: list[tuple[str, str, str]] = [
     ("backend", "Backend", "#3498db"),
     ("gui", "GUI", "#9b59b6"),
     ("test", "Tests", "#27ae60"),
@@ -67,7 +68,7 @@ DEFAULT_LAYERS: List[Tuple[str, str, str]] = [
 ]
 
 # Pairs (src_layer, tgt_layer) that represent architectural violations
-FORBIDDEN_DIRECTIONS: List[Tuple[str, str]] = [
+FORBIDDEN_DIRECTIONS: list[tuple[str, str]] = [
     ("Backend", "GUI"),
 ]
 
@@ -76,7 +77,7 @@ FORBIDDEN_DIRECTIONS: List[Tuple[str, str]] = [
 # composition root, which necessarily wires both layers together at
 # startup. Kept as an explicit, reviewable allowlist rather than silently
 # excluding a whole module from violation checking.
-ALLOWED_VIOLATIONS: Set[Tuple[str, str]] = {
+ALLOWED_VIOLATIONS: set[tuple[str, str]] = {
     ("backend.src.app", "gui.src.windows.main"),
 }
 
@@ -101,7 +102,9 @@ def file_to_module(filepath: Path, root: Path) -> str:
     return ".".join(parts)
 
 
-def collect_module_map(scan_dirs: List[Path], name_root: Path, exclude: Set[str]) -> Dict[str, Path]:
+def collect_module_map(
+    scan_dirs: list[Path], name_root: Path, exclude: set[str]
+) -> dict[str, Path]:
     """
     Collect a map of all modules in the codebase.
 
@@ -120,7 +123,7 @@ def collect_module_map(scan_dirs: List[Path], name_root: Path, exclude: Set[str]
     Returns:
         Dict[str, Path]: Map of module names to file paths.
     """
-    module_map: Dict[str, Path] = {}
+    module_map: dict[str, Path] = {}
     for scan_dir in scan_dirs:
         for dirpath, dirs, files in os.walk(scan_dir):
             dirs[:] = [d for d in dirs if d not in SKIP_DIRS and d not in exclude]
@@ -131,7 +134,7 @@ def collect_module_map(scan_dirs: List[Path], name_root: Path, exclude: Set[str]
     return module_map
 
 
-def resolve_to_module(raw: str, level: int, current: str, known: Set[str]) -> Optional[str]:
+def resolve_to_module(raw: str, level: int, current: str, known: set[str]) -> str | None:
     """
     Resolve a raw import string to a module name.
 
@@ -159,7 +162,7 @@ def resolve_to_module(raw: str, level: int, current: str, known: Set[str]) -> Op
     return None
 
 
-def build_graph(scan_dirs: List[Path], name_root: Path, exclude: Set[str]) -> Dict[str, Set[str]]:
+def build_graph(scan_dirs: list[Path], name_root: Path, exclude: set[str]) -> dict[str, set[str]]:
     """
     Build a module graph from the codebase.
 
@@ -173,7 +176,7 @@ def build_graph(scan_dirs: List[Path], name_root: Path, exclude: Set[str]) -> Di
     """
     module_map = collect_module_map(scan_dirs, name_root, exclude)
     known = set(module_map.keys())
-    graph: Dict[str, Set[str]] = {m: set() for m in known}
+    graph: dict[str, set[str]] = {m: set() for m in known}
     for module, fpath in module_map.items():
         try:
             tree = ast.parse(fpath.read_text(encoding="utf-8"), filename=str(fpath))
@@ -193,7 +196,7 @@ def build_graph(scan_dirs: List[Path], name_root: Path, exclude: Set[str]) -> Di
     return graph
 
 
-def get_layer(module: str, layers: List[Tuple[str, str, str]]) -> Tuple[str, str]:
+def get_layer(module: str, layers: list[tuple[str, str, str]]) -> tuple[str, str]:
     """
     Get the layer of a module.
 
@@ -211,10 +214,10 @@ def get_layer(module: str, layers: List[Tuple[str, str, str]]) -> Tuple[str, str
 
 
 def find_violations(
-    graph: Dict[str, Set[str]],
-    layers: List[Tuple[str, str, str]],
-    forbidden: List[Tuple[str, str]],
-) -> List[Tuple[str, str]]:
+    graph: dict[str, set[str]],
+    layers: list[tuple[str, str, str]],
+    forbidden: list[tuple[str, str]],
+) -> list[tuple[str, str]]:
     """
     Find architectural violations in the module graph.
 
@@ -226,7 +229,7 @@ def find_violations(
     Returns:
         List[Tuple[str, str]]: List of violation edges.
     """
-    violations: List[Tuple[str, str]] = []
+    violations: list[tuple[str, str]] = []
     for src, targets in graph.items():
         src_layer, _ = get_layer(src, layers)
         for tgt in targets:
@@ -238,7 +241,9 @@ def find_violations(
     return violations
 
 
-def condense_to_packages(graph: Dict[str, Set[str]], depth: int) -> Tuple[Dict[str, Set[str]], Dict[str, str]]:
+def condense_to_packages(
+    graph: dict[str, set[str]], depth: int
+) -> tuple[dict[str, set[str]], dict[str, str]]:
     """
     Collapse module nodes to their top-`depth` package prefix.
 
@@ -262,8 +267,8 @@ def condense_to_packages(graph: Dict[str, Set[str]], depth: int) -> Tuple[Dict[s
         """
         return ".".join(module.split(".")[:depth])
 
-    node_to_pkg: Dict[str, str] = {m: pkg(m) for m in graph}
-    pkg_graph: Dict[str, Set[str]] = {}
+    node_to_pkg: dict[str, str] = {m: pkg(m) for m in graph}
+    pkg_graph: dict[str, set[str]] = {}
     for m, targets in graph.items():
         src_pkg = node_to_pkg[m]
         pkg_graph.setdefault(src_pkg, set())
@@ -275,9 +280,9 @@ def condense_to_packages(graph: Dict[str, Set[str]], depth: int) -> Tuple[Dict[s
 
 
 def generate_html(
-    graph: Dict[str, Set[str]],
-    layers: List[Tuple[str, str, str]],
-    violation_edges: Set[Tuple[str, str]],
+    graph: dict[str, set[str]],
+    layers: list[tuple[str, str, str]],
+    violation_edges: set[tuple[str, str]],
     output: Path,
     depth: int = 0,
 ) -> None:
@@ -302,14 +307,16 @@ def generate_html(
     # instead of pyvis's default of copying them to a `lib/` dir relative to
     # the current working directory (which collided with the unrelated
     # `lib/cmake` tracked in this repo's root).
-    net = Network(height="900px", width="100%", directed=True, notebook=False, cdn_resources="in_line")
+    net = Network(
+        height="900px", width="100%", directed=True, notebook=False, cdn_resources="in_line"
+    )
     net.set_options(
         '{"physics":{"barnesHut":{"gravitationalConstant":-5000,"springLength":150}},'
         '"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":0.4}},'
         '"smooth":{"enabled":true,"type":"dynamic"}}}'
     )
 
-    violation_set: Set[Tuple[str, str]] = violation_edges
+    violation_set: set[tuple[str, str]] = violation_edges
     if depth > 0:
 
         def pkg(m: str) -> str:
@@ -348,7 +355,9 @@ def generate_html(
     x_pos = -900
     for _, label, color in layers:
         node_id = f"__legend_{label}"
-        net.add_node(node_id, label=f"■ {label}", color=color, size=25, physics=False, x=x_pos, y=-400)
+        net.add_node(
+            node_id, label=f"■ {label}", color=color, size=25, physics=False, x=x_pos, y=-400
+        )
         x_pos += 200
 
     net.save_graph(str(output))
@@ -357,7 +366,9 @@ def generate_html(
 
 def main() -> None:
     """Visualise the module-level import graph of a Python codebase."""
-    parser = argparse.ArgumentParser(description="Visualise the module-level import graph of a Python codebase.")
+    parser = argparse.ArgumentParser(
+        description="Visualise the module-level import graph of a Python codebase."
+    )
     parser.add_argument(
         "directory",
         nargs="+",
@@ -370,8 +381,12 @@ def main() -> None:
         help="Common root used to compute dotted module names (default: nearest shared parent of `directory`)",
     )
     parser.add_argument("--exclude", nargs="+", default=[], help="Directory names to skip")
-    parser.add_argument("--html", default="module_graph.html", metavar="PATH", help="Output HTML path")
-    parser.add_argument("--no-html", action="store_true", help="Skip HTML generation, print summary only")
+    parser.add_argument(
+        "--html", default="module_graph.html", metavar="PATH", help="Output HTML path"
+    )
+    parser.add_argument(
+        "--no-html", action="store_true", help="Skip HTML generation, print summary only"
+    )
     parser.add_argument(
         "--depth",
         type=int,
@@ -393,7 +408,9 @@ def main() -> None:
         name_root = Path(os.path.commonpath([str(d) for d in scan_dirs]))
 
     exclude = set(args.exclude)
-    print(f"{CYAN}Building module graph for {[str(d) for d in scan_dirs]} (names relative to '{name_root}')...{RESET}")
+    print(
+        f"{CYAN}Building module graph for {[str(d) for d in scan_dirs]} (names relative to '{name_root}')...{RESET}"
+    )
     graph = build_graph(scan_dirs, name_root, exclude)
     edge_count = sum(len(v) for v in graph.values())
     print(f"  {DIM}{len(graph)} modules, {edge_count} internal import edges.{RESET}\n")
@@ -411,7 +428,7 @@ def main() -> None:
         print(f"{GREEN}✓  No cross-layer violations detected.{RESET}\n")
 
     # Layer distribution
-    layer_counts: Dict[str, int] = {}
+    layer_counts: dict[str, int] = {}
     for m in graph:
         label, _ = get_layer(m, DEFAULT_LAYERS)
         layer_counts[label] = layer_counts.get(label, 0) + 1
@@ -422,7 +439,7 @@ def main() -> None:
     print()
 
     if not args.no_html:
-        violation_edge_set: Set[Tuple[str, str]] = set(violations)
+        violation_edge_set: set[tuple[str, str]] = set(violations)
         generate_html(graph, DEFAULT_LAYERS, violation_edge_set, Path(args.html), depth=args.depth)
 
     sys.exit(1 if violations else 0)

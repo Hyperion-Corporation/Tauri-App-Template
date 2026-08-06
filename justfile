@@ -1,8 +1,8 @@
-# Dev-Repo-Template Task Automation — Root Justfile
+# Tauri-App-Template Task Automation — Root Justfile
 # https://github.com/casey/just
 #
-# Recipes are organised into per-domain sub-modules under tools/. Invoke a
-# sub-module recipe directly (e.g. `just build::rust`, `just test::python`),
+# Recipes are organized into per-domain sub-modules under tools/. Invoke a
+# sub-module recipe directly (e.g. `just build::backend`, `just test::middleware`),
 # or use the root shorthands below.
 
 set shell := ["bash", "-c"]
@@ -47,31 +47,31 @@ clean:
 
 # --- Build (→ tools/build) ---
 
-# Build every language module
-build:
+# Build every application module (backend, middleware, frontend)
+build-all:
     @just build::all
 
 # --- Test (→ tools/test) ---
 
-# Run every language module's test suite
-test:
+# Run every application module's test suite
+test-all:
     @just test::all
 
 # --- Validation (→ tools/validation) ---
 
-# Run every language module's linters
+# Run every application module's linters
 lint:
     @just validation::all
 
 # --- Docs (→ tools/docs) ---
 
 # Build the documentation site (MkDocs + Sphinx)
-docs:
+docs-build:
     @just docs::build
 
 # --- Benchmark (→ tools/bench) ---
 
-bench:
+bench-all:
     @just bench::all
 
 # --- Docker (→ tools/dev) ---

@@ -26,7 +26,6 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 # Terminal Colors
 CYAN = "\033[96m"
@@ -36,7 +35,7 @@ RED = "\033[91m"
 RESET = "\033[0m"
 
 
-def load_patterns() -> Dict[str, re.Pattern]:
+def load_patterns() -> dict[str, re.Pattern]:
     """
     Dynamically load regex patterns from external files.
 
@@ -48,17 +47,17 @@ def load_patterns() -> Dict[str, re.Pattern]:
 
     try:
         # Keep HTML and JS case-insensitive as they often vary
-        with open(base_dir / "pattern.html", "r", encoding="utf-8") as f:
+        with open(base_dir / "pattern.html", encoding="utf-8") as f:
             patterns["HTML"] = re.compile(f.read().strip(), re.IGNORECASE)
 
-        with open(base_dir / "pattern.js", "r", encoding="utf-8") as f:
+        with open(base_dir / "pattern.js", encoding="utf-8") as f:
             patterns["JavaScript"] = re.compile(f.read().strip(), re.IGNORECASE)
 
-        with open(base_dir / "pattern.css", "r", encoding="utf-8") as f:
+        with open(base_dir / "pattern.css", encoding="utf-8") as f:
             patterns["CSS"] = re.compile(f.read().strip(), re.IGNORECASE)
 
         # CHANGE: Remove re.IGNORECASE for SQL to prevent English sentence collisions
-        with open(base_dir / "pattern.sql", "r", encoding="utf-8") as f:
+        with open(base_dir / "pattern.sql", encoding="utf-8") as f:
             patterns["SQL"] = re.compile(f.read().strip(), re.DOTALL)
 
     except FileNotFoundError as e:
@@ -73,7 +72,7 @@ def load_patterns() -> Dict[str, re.Pattern]:
 LANGUAGE_PATTERNS = load_patterns()
 
 
-def get_docstring_lines(tree: ast.AST) -> Set[int]:
+def get_docstring_lines(tree: ast.AST) -> set[int]:
     """
     Finds all line numbers that belong to docstrings so we can ignore them.
 
@@ -83,7 +82,7 @@ def get_docstring_lines(tree: ast.AST) -> Set[int]:
     Returns:
         Set of line numbers that belong to docstrings.
     """
-    doc_lines: Set[int] = set()
+    doc_lines: set[int] = set()
     for node in ast.walk(tree):
         if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and (
             node.body
@@ -126,7 +125,7 @@ class EmbeddedCodeVisitor(ast.NodeVisitor):
         findings: List of tuples containing line number, language, and snippet.
     """
 
-    def __init__(self, doc_lines: Set[int]):
+    def __init__(self, doc_lines: set[int]):
         """
         Initialize the visitor.
 
@@ -134,7 +133,7 @@ class EmbeddedCodeVisitor(ast.NodeVisitor):
             doc_lines: Set of line numbers that belong to docstrings.
         """
         self.doc_lines = doc_lines
-        self.findings: List[Tuple[int, str, str]] = []  # (lineno, language, snippet)
+        self.findings: list[tuple[int, str, str]] = []  # (lineno, language, snippet)
 
     def _check_and_record(self, text: str, lineno: int):
         """
@@ -184,7 +183,7 @@ class EmbeddedCodeVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def analyze_file(filepath: Path) -> List[Tuple[int, str, str]]:
+def analyze_file(filepath: Path) -> list[tuple[int, str, str]]:
     """
     Parses a file and returns embedded code findings.
 
@@ -195,7 +194,7 @@ def analyze_file(filepath: Path) -> List[Tuple[int, str, str]]:
         List of tuples containing line number, language, and snippet.
     """
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             source = f.read()
         tree = ast.parse(source, filename=str(filepath))
     except (SyntaxError, UnicodeDecodeError):
@@ -210,8 +209,12 @@ def analyze_file(filepath: Path) -> List[Tuple[int, str, str]]:
 
 def main():
     """Main function to check for embedded languages."""
-    parser = argparse.ArgumentParser(description="Find embedded HTML, CSS, JS, or SQL in Python files.")
-    parser.add_argument("directory", type=str, nargs="?", default=".", help="Target directory to scan")
+    parser = argparse.ArgumentParser(
+        description="Find embedded HTML, CSS, JS, or SQL in Python files."
+    )
+    parser.add_argument(
+        "directory", type=str, nargs="?", default=".", help="Target directory to scan"
+    )
     parser.add_argument("-e", "--exclude", nargs="+", default=[], help="Directories to exclude")
     args = parser.parse_args()
 
@@ -223,7 +226,17 @@ def main():
     print(f"{CYAN}Scanning '{target_root}' for embedded languages...{RESET}")
     print("=" * 70)
 
-    internal_skip = {".git", "__pycache__", "venv", ".venv", "env", "node_modules", "dist", "build", "target"}
+    internal_skip = {
+        ".git",
+        "__pycache__",
+        "venv",
+        ".venv",
+        "env",
+        "node_modules",
+        "dist",
+        "build",
+        "target",
+    }
     exclude_set = set(args.exclude) | internal_skip
 
     files_with_issues = 0
@@ -243,12 +256,16 @@ def main():
                     print(f"\n📄 {CYAN}{rel_path}{RESET}")
 
                     for line_no, lang, snippet in findings:
-                        print(f"   Line {line_no:<4} | {RED}[{lang}]{RESET} {YELLOW}{snippet}{RESET}")
+                        print(
+                            f"   Line {line_no:<4} | {RED}[{lang}]{RESET} {YELLOW}{snippet}{RESET}"
+                        )
                         total_violations += 1
 
     print("\n" + "=" * 70)
     if total_violations > 0:
-        print(f"⚠️  {RED}Found {total_violations} embedded code blocks across {files_with_issues} files.{RESET}")
+        print(
+            f"⚠️  {RED}Found {total_violations} embedded code blocks across {files_with_issues} files.{RESET}"
+        )
     else:
         print(f"✅ {GREEN}Clean! No embedded languages detected.{RESET}")
 

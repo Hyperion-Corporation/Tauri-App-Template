@@ -2,37 +2,31 @@
 
 set shell := ["bash", "-c"]
 
-# Set up every language module's dev environment
+# Set up environment for all modules
+[no-cd]
 setup:
     @echo "Setting up dev environment..."
-    cd python && uv sync --all-extras --dev
-    cd typescript && npm ci
-    cd kotlin && ./gradlew --version
-    cd java && mvn -q -B dependency:go-offline
-    cd rust && cargo fetch
-    cd go && go mod download
+    cd middleware && uv sync --all-extras --dev
+    cd frontend && npm ci
     pip install pre-commit || true
     pre-commit install --install-hooks || echo "pre-commit not available"
-    @echo "Setup complete. Run 'just test' to verify."
+    @echo "Setup complete. Run 'just test-all' to verify."
 
 # Update all dependencies
+[no-cd]
 update:
     @echo "Updating dependencies..."
-    cd python && uv sync --upgrade
-    cd typescript && npm update
-    cd rust && cargo update
-    cd go && go get -u ./... && go mod tidy
+    cd middleware && uv sync --upgrade
+    cd frontend && npm update
 
 # Run pre-commit hooks manually
+[no-cd]
 pre-commit:
     pre-commit run --all-files
 
 # Clean build artifacts across every module
+[no-cd]
 clean:
-    rm -rf python/.pytest_cache python/.ruff_cache python/.mypy_cache python/**/__pycache__
-    rm -rf typescript/dist typescript/node_modules/.cache
-    rm -rf rust/target
-    rm -rf go/bin
-    rm -rf kotlin/build
-    rm -rf java/target
-    rm -rf cpp/build
+    rm -rf middleware/.pytest_cache middleware/.ruff_cache middleware/.mypy_cache middleware/**/__pycache__
+    rm -rf frontend/dist frontend/node_modules/.cache frontend/src-tauri/target
+    rm -rf backend/build

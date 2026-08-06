@@ -1,9 +1,9 @@
-# Root CMakeLists.txt — thin wrapper that delegates to cpp/.
+# Root CMakeLists.txt — thin wrapper that delegates to backend/.
 #
-# This repository has no unified top-level build; each language module is
-# built independently (see the root justfile). This file exists only so
-# `cmake -S . -B build` from the repo root also works for the C++ module.
+# This repository has no unified top-level build; each layer (backend, middleware,
+# frontend) can be built independently (see the root justfile). This file exists so
+# `cmake -S . -B build` from the repo root builds the C++ backend module.
 cmake_minimum_required(VERSION 3.20)
-project(dev_repo_template LANGUAGES CXX)
+project(tauri_app_template LANGUAGES CXX)
 
-add_subdirectory(cpp)
+add_subdirectory(backend)

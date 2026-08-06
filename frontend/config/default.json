@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "dev-repo-template",
+    "name": "tauri-app-template",
     "apiBaseUrl": "http://localhost:8000"
   }
 }

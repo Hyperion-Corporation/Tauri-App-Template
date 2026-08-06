@@ -28,8 +28,8 @@ import argparse
 import ast
 import os
 import sys
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Set, Tuple
 
 SKIP_DIRS = {".git", "__pycache__", "venv", ".venv", "node_modules", "dist", "build"}
 
@@ -44,7 +44,9 @@ RESET = "\033[0m"
 try:
     from pyvis.network import Network
 except ImportError:
-    print(f"{YELLOW}pyvis not installed — skipping HTML in generate_html. Install with: uv add pyvis{RESET}")
+    print(
+        f"{YELLOW}pyvis not installed — skipping HTML in generate_html. Install with: uv add pyvis{RESET}"
+    )
     Network = None
 
 
@@ -68,7 +70,7 @@ def file_to_module(filepath: Path, root: Path) -> str:
     return ".".join(parts)
 
 
-def collect_module_map(root: Path, exclude: Set[str]) -> Dict[str, Path]:
+def collect_module_map(root: Path, exclude: set[str]) -> dict[str, Path]:
     """
     Collect a map of module names to file paths.
 
@@ -79,7 +81,7 @@ def collect_module_map(root: Path, exclude: Set[str]) -> Dict[str, Path]:
     Returns:
         Dictionary mapping module names to file paths.
     """
-    module_map: Dict[str, Path] = {}
+    module_map: dict[str, Path] = {}
     for dirpath, dirs, files in os.walk(root):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS and d not in exclude]
         for fname in files:
@@ -89,7 +91,7 @@ def collect_module_map(root: Path, exclude: Set[str]) -> Dict[str, Path]:
     return module_map
 
 
-def resolve_to_module(raw: str, level: int, current: str, known: Set[str]) -> Optional[str]:
+def resolve_to_module(raw: str, level: int, current: str, known: set[str]) -> str | None:
     """
     Resolve an import string to a module name.
 
@@ -127,7 +129,7 @@ class ImportVisitor(ast.NodeVisitor):
         deps: Set of import dependencies.
     """
 
-    def __init__(self, module: str, known: Set[str]):
+    def __init__(self, module: str, known: set[str]):
         """
         Initialize the import visitor.
 
@@ -137,7 +139,7 @@ class ImportVisitor(ast.NodeVisitor):
         """
         self.module = module
         self.known = known
-        self.deps: Set[str] = set()
+        self.deps: set[str] = set()
 
     def visit_Import(self, node: ast.Import):
         """
@@ -206,7 +208,7 @@ class ImportVisitor(ast.NodeVisitor):
         return
 
 
-def build_graph(root: Path, exclude: Set[str]) -> Dict[str, Set[str]]:
+def build_graph(root: Path, exclude: set[str]) -> dict[str, set[str]]:
     """
     Build an import graph from the Python files in the given directory.
 
@@ -219,7 +221,7 @@ def build_graph(root: Path, exclude: Set[str]) -> Dict[str, Set[str]]:
     """
     module_map = collect_module_map(root, exclude)
     known = set(module_map.keys())
-    graph: Dict[str, Set[str]] = {m: set() for m in known}
+    graph: dict[str, set[str]] = {m: set() for m in known}
     for module, fpath in module_map.items():
         try:
             tree = ast.parse(fpath.read_text(encoding="utf-8"), filename=str(fpath))
@@ -233,7 +235,7 @@ def build_graph(root: Path, exclude: Set[str]) -> Dict[str, Set[str]]:
     return graph
 
 
-def tarjan_sccs(graph: Dict[str, Set[str]]) -> List[List[str]]:
+def tarjan_sccs(graph: dict[str, set[str]]) -> list[list[str]]:
     """
     Iterative Tarjan's SCC. Returns only SCCs with more than 1 node (true cycles).
 
@@ -243,18 +245,18 @@ def tarjan_sccs(graph: Dict[str, Set[str]]) -> List[List[str]]:
     Returns:
         List of SCCs, where each SCC is a list of module names.
     """
-    idx: Dict[str, int] = {}
-    low: Dict[str, int] = {}
-    on_stk: Set[str] = set()
-    stk: List[str] = []
-    sccs: List[List[str]] = []
+    idx: dict[str, int] = {}
+    low: dict[str, int] = {}
+    on_stk: set[str] = set()
+    stk: list[str] = []
+    sccs: list[list[str]] = []
     ctr = [0]
 
     for root_node in list(graph):
         if root_node in idx:
             continue
 
-        call_stack: List[Tuple[str, Iterator[str]]] = []
+        call_stack: list[tuple[str, Iterator[str]]] = []
 
         # Initialize DFS from root node
         idx[root_node] = low[root_node] = ctr[0]
@@ -284,7 +286,7 @@ def tarjan_sccs(graph: Dict[str, Set[str]]) -> List[List[str]]:
                     parent = call_stack[-1][0]
                     low[parent] = min(low[parent], low[v])
                 if low[v] == idx[v]:
-                    scc: List[str] = []
+                    scc: list[str] = []
                     while True:
                         w = stk.pop()
                         on_stk.discard(w)
@@ -297,7 +299,7 @@ def tarjan_sccs(graph: Dict[str, Set[str]]) -> List[List[str]]:
     return sccs
 
 
-def generate_html(cycles: List[List[str]], graph: Dict[str, Set[str]], output: Path) -> None:
+def generate_html(cycles: list[list[str]], graph: dict[str, set[str]], output: Path) -> None:
     """
     Generate an HTML visualization of the import graph with cycles highlighted.
 
@@ -310,7 +312,9 @@ def generate_html(cycles: List[List[str]], graph: Dict[str, Set[str]], output: P
     # cdn_resources="in_line": see visualize_module_graph.py's generate_html
     # for why (avoids pyvis dumping a `lib/` dir at cwd that collides with
     # this repo's tracked `lib/cmake`).
-    net = Network(height="800px", width="100%", directed=True, notebook=False, cdn_resources="in_line")
+    net = Network(
+        height="800px", width="100%", directed=True, notebook=False, cdn_resources="in_line"
+    )
     net.set_options(
         '{"physics":{"stabilization":{"iterations":200}},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":0.5}}}}'
     )
@@ -336,7 +340,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Detect circular imports in a Python codebase.")
     parser.add_argument("directory", help="Root directory to scan")
     parser.add_argument("--exclude", nargs="+", default=[], help="Directory names to skip")
-    parser.add_argument("--html", default="", metavar="PATH", help="Write interactive HTML graph to PATH")
+    parser.add_argument(
+        "--html", default="", metavar="PATH", help="Write interactive HTML graph to PATH"
+    )
     args = parser.parse_args()
 
     root = Path(args.directory).resolve()

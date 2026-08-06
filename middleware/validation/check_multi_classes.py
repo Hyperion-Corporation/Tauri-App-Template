@@ -35,7 +35,7 @@ def get_top_level_classes(filepath):
         Any: Description of return value.
     """
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             source = f.read()
         tree = ast.parse(source)
         return [node.name for node in tree.body if isinstance(node, ast.ClassDef)]
@@ -45,9 +45,13 @@ def get_top_level_classes(filepath):
 
 def main():
     """Main."""
-    parser = argparse.ArgumentParser(description="Find files with multiple top-level class definitions.")
+    parser = argparse.ArgumentParser(
+        description="Find files with multiple top-level class definitions."
+    )
     parser.add_argument("path", nargs="?", default=".", help="Directory to scan")
-    parser.add_argument("--ignore-private", action="store_true", help="Ignore classes starting with _")
+    parser.add_argument(
+        "--ignore-private", action="store_true", help="Ignore classes starting with _"
+    )
     parser.add_argument("--exclude", action="append", help="Relative path(s) to exclude")
     args = parser.parse_args()
 
@@ -80,7 +84,8 @@ def main():
         dirs[:] = [
             d
             for d in dirs
-            if d not in internal_skip and os.path.normpath(os.path.join(rel_root, d)) not in excluded_paths
+            if d not in internal_skip
+            and os.path.normpath(os.path.join(rel_root, d)) not in excluded_paths
         ]
 
         for file in files:
@@ -99,7 +104,9 @@ def main():
                     if len(class_list_str) > 35:
                         class_list_str = class_list_str[:32] + "..."
 
-                    print(f"{display_path:<60} | {RED}{len(classes):<5}{RESET} | {YELLOW}{class_list_str}{RESET}")
+                    print(
+                        f"{display_path:<60} | {RED}{len(classes):<5}{RESET} | {YELLOW}{class_list_str}{RESET}"
+                    )
 
     print("-" * 100)
     if found_violations:

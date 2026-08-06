@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 TEST(Greet, ReturnsExpectedMessage) {
-    EXPECT_EQ(dev_repo_template::greet("Dev-Repo-Template"), "Hello, Dev-Repo-Template!");
+    EXPECT_EQ(dev_repo_template::greet("Tauri-App-Template"), "Hello, Tauri-App-Template!");
 }
 
 TEST(Greet, HandlesDefaultCase) {

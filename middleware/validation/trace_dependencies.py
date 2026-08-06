@@ -1,6 +1,7 @@
 """
 A tool to visually trace the origin and usages of a Python component.
 """
+
 import os
 import sys
 
@@ -12,7 +13,10 @@ from backend.validation.dependency_grapher import DependencyGrapher
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Generate an interactive dependency graph for a component.")
+
+    parser = argparse.ArgumentParser(
+        description="Generate an interactive dependency graph for a component."
+    )
     parser.add_argument("project_root", help="Root directory to scan")
     parser.add_argument("target_file", help="The file where the component is located")
     parser.add_argument("target_name", help="The name of the component (function/class)")
@@ -25,6 +29,7 @@ def main():
 
     grapher = DependencyGrapher(args.project_root)
     grapher.generate_graph(target_file, args.target_name)
+
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-"""Example entry point for the Python module."""
+"""Example entry point for the Python middleware module."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ def greet(name: str) -> str:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    parser = argparse.ArgumentParser(description="Dev-Repo-Template Python example")
+    parser = argparse.ArgumentParser(description="Tauri-App-Template Python middleware")
     parser.add_argument("--name", default="world", help="Name to greet")
     args = parser.parse_args()
     print(greet(args.name))

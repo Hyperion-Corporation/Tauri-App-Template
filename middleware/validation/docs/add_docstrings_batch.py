@@ -20,7 +20,7 @@ import ast
 import contextlib
 import os
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 # --- Templates (Google Style) ---
 
@@ -84,7 +84,7 @@ class DocstringInjector:
         self.filepath = filepath
         self.lines = Path(filepath).read_text(encoding="utf-8").splitlines()
         # We process from bottom to top to avoid invalidating line numbers
-        self.modifications: List[Any] = []
+        self.modifications: list[Any] = []
 
     def _get_indent(self, lineno: int) -> str:
         """Returns the indentation string of a specific line.
@@ -100,7 +100,7 @@ class DocstringInjector:
         line = self.lines[lineno - 1]
         return line[: len(line) - len(line.lstrip())]
 
-    def _format_args(self, args: List[ast.arg], base_indent: str) -> str:
+    def _format_args(self, args: list[ast.arg], base_indent: str) -> str:
         """Formats the Args section with type hints.
 
         Args:
@@ -139,7 +139,9 @@ class DocstringInjector:
         """
         if isinstance(node, ast.Module):
             filename = os.path.basename(self.filepath)
-            return TEMPLATES["module"].format(filename=filename, module_name=filename.replace(".py", ""))
+            return TEMPLATES["module"].format(
+                filename=filename, module_name=filename.replace(".py", "")
+            )
 
         if isinstance(node, ast.ClassDef):
             return TEMPLATES["class"].format(class_name=node.name)
@@ -154,7 +156,9 @@ class DocstringInjector:
 
             has_args = any(a.arg not in ("self", "cls") for a in args)
             has_yield = any(isinstance(n, (ast.Yield, ast.YieldFrom)) for n in ast.walk(node))
-            has_return = any(isinstance(n, ast.Return) and n.value is not None for n in ast.walk(node))
+            has_return = any(
+                isinstance(n, ast.Return) and n.value is not None for n in ast.walk(node)
+            )
 
             summary = node.name.replace("_", " ").capitalize()
             indent = self._get_indent(node.lineno) + "    "
@@ -164,13 +168,17 @@ class DocstringInjector:
                 return TEMPLATES["init"].format(class_name=context, args_section=args_section)
 
             if has_yield:
-                return TEMPLATES["function_yield"].format(summary=summary, args_section=args_section, return_type="Any")
+                return TEMPLATES["function_yield"].format(
+                    summary=summary, args_section=args_section, return_type="Any"
+                )
 
             if has_return:
                 # If it returns but has no args, we might skip Args section entirely?
                 # For strict Google style, if args exist, they must be documented.
                 if has_args:
-                    return TEMPLATES["function"].format(summary=summary, args_section=args_section, return_type="Any")
+                    return TEMPLATES["function"].format(
+                        summary=summary, args_section=args_section, return_type="Any"
+                    )
                 else:
                     # No args, just return
                     return f'''"""{summary}.\n\n{indent}Returns:\n{indent}    Any: Description.\n{indent}"""'''
@@ -214,9 +222,14 @@ class DocstringInjector:
             self.modifications.append((0, doc, ""))
 
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and not ast.get_docstring(node):
+            if isinstance(
+                node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+            ) and not ast.get_docstring(node):
                 context = ""
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == "__init__":
+                if (
+                    isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and node.name == "__init__"
+                ):
                     context = "Class"
                 doc = self.generate_docstring(node, context)
                 idx = self._find_insertion_line(node)

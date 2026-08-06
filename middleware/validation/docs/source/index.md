@@ -38,14 +38,14 @@ sys.path.insert(0, os.path.abspath("../../"))
 # 1. Required Extensions
 extensions = [
     "autodoc2",
-    "myst_nb",         # Handles Markdown and Jupyter Notebooks
-    "sphinx_design",   # For grids, cards, and tabs
+    "myst_nb",  # Handles Markdown and Jupyter Notebooks
+    "sphinx_design",  # For grids, cards, and tabs
     "sphinx_copybutton",
 ]
 
 # 2. Autodoc2 Configuration
 autodoc2_packages = [
-    "../../src",       # Path to your Python package root
+    "../../src",  # Path to your Python package root
 ]
 
 # Render API as MyST Markdown instead of reStructuredText

@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for the python/ module."""
+"""Shared pytest fixtures for the middleware module."""
 
 from __future__ import annotations
 
@@ -13,4 +13,4 @@ import pytest
 
 @pytest.fixture
 def sample_name() -> str:
-    return "Dev-Repo-Template"
+    return "Tauri-App-Template"

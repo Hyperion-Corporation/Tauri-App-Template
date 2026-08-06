@@ -2,39 +2,41 @@
 
 ## Prerequisites
 
-- Git, [`just`](https://github.com/casey/just), `pre-commit`
-- Per-module toolchains: `uv` (Python 3.11+), Node 22 (TypeScript), JDK 21 + Gradle wrapper (Kotlin), JDK 21 + Maven (Java), stable Rust (Cargo), Go 1.22+, CMake + a C++17 compiler
+- **Git**, [`just`](https://github.com/casey/just), `pre-commit`
+- **C++ Backend**: `cmake` (>= 3.20) + C++20 compiler (`g++` / `clang++` / `MSVC`)
+- **Python Middleware**: `python` (>= 3.11) + `uv`
+- **TypeScript Frontend & Tauri**: Node.js (>= 18), `npm`, Rust toolchain (`rustc`, `cargo`)
 
 ## Local Setup
 
 ```bash
-git clone https://github.com/<org>/<repo>.git
-cd <repo>
+git clone https://github.com/ACFHarbinger/Tauri-App-Template.git
+cd Tauri-App-Template
 cp .env.example .env
-pip install pre-commit && pre-commit install
-just --list
+just setup
 ```
 
-## Running a Single Module
+## Module Execution & Development
 
 ```bash
-just test python       # or typescript, kotlin, java, rust, go, cpp
-just lint python
-```
+# C++ Backend
+just build backend
+just test backend
 
-## Containerized Dev Environment
+# Python Middleware
+just build middleware
+just test middleware
 
-Open the repo in VS Code and choose "Reopen in Container" — see [`.devcontainer/devcontainer.json`](../.devcontainer/devcontainer.json). Or run the full stack with:
-
-```bash
-docker compose -f infra/docker/docker-compose.yml up
+# TypeScript / Tauri Frontend
+cd frontend && npm run dev
+cd frontend && npm run tauri:dev
 ```
 
 ## Common Tasks
 
 | Task | Command |
-| --- | --- |
+| :--- | :--- |
 | Run all tests | `just test` |
 | Run all linters | `just lint` |
-| Build docs | `just docs` |
-| Build & start Docker stack | `just docker-up` |
+| Build all modules | `just build` |
+| Build documentation | `just docs` |

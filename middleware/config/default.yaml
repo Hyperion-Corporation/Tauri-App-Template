@@ -1,7 +1,5 @@
-# Example runtime configuration.
+# Default Python middleware configuration
 app:
-  name: dev-repo-template
+  name: tauri-app-template-middleware
+  environment: development
   log_level: INFO
-
-greeting:
-  default_name: world
