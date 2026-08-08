@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ACFHarbinger/Tauri-App-Template/actions/workflows/ci.yml/badge.svg)](https.github.com/ACFHarbinger/Tauri-App-Template/actions/workflows/ci.yml)
 [![Docs](https://github.com/ACFHarbinger/Tauri-App-Template/actions/workflows/docs.yml/badge.svg)](https://github.com/ACFHarbinger/Tauri-App-Template/actions/workflows/docs.yml)
-[![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue.svg)](LICENSE.md)
+[![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue.svg)](LICENSE)
 
 `Tauri-App-Template` is a standardized template repository for building high-performance desktop applications powered by **Tauri** (Rust / TypeScript), a **C++ native backend**, and a **Python middleware** layer.
 
@@ -92,4 +92,4 @@ Tauri-App-Template/
 
 ## 📄 License
 
-This repository is licensed under [AGPL-3.0-only](LICENSE.md).
+This repository is licensed under [AGPL-3.0-only](LICENSE).
